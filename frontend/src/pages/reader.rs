@@ -139,7 +139,7 @@ pub fn chapter_reader_page(props: &ChapterReaderProps) -> Html {
                     { format!("加载失败: {}", err) }
                 </div>
             } else if let Some(ref d) = *data {
-                <div id="wrapper" class={wrapper_classes}>
+                <div id="wrapper" class={wrapper_classes} style={format!("background-color:{};", prefs.bg_color)}>
                     <div class="content_read">
                         <div class="box_con">
                             <div class="con_top">
