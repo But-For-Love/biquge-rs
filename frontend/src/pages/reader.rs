@@ -122,11 +122,25 @@ pub fn chapter_reader_page(props: &ChapterReaderProps) -> Html {
         })
     };
 
-    let wrapper_classes = if prefs.night_mode {
-        Classes::from("night-mode")
-    } else {
-        Classes::new()
-    };
+    // Apply night-mode class to outer #wrapper via DOM
+    {
+        let night = prefs.night_mode;
+        use_effect_with(night, move |&night| {
+            if let Some(wrapper) = gloo_utils::document().get_element_by_id("wrapper") {
+                if night {
+                    let _ = wrapper.set_class_name("night-mode");
+                } else {
+                    let _ = wrapper.set_class_name("");
+                }
+            }
+            // Cleanup: remove night-mode when leaving page
+            move || {
+                if let Some(wrapper) = gloo_utils::document().get_element_by_id("wrapper") {
+                    let _ = wrapper.set_class_name("");
+                }
+            }
+        });
+    }
 
     html! {
         <>
@@ -139,7 +153,7 @@ pub fn chapter_reader_page(props: &ChapterReaderProps) -> Html {
                     { format!("加载失败: {}", err) }
                 </div>
             } else if let Some(ref d) = *data {
-                <div id="wrapper" class={wrapper_classes} style={format!("background-color:{};", prefs.bg_color)}>
+                <div style={format!("background-color:{};", prefs.bg_color)}>
                     <div class="content_read">
                         <div class="box_con">
                             <div class="con_top">
