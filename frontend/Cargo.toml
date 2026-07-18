@@ -15,6 +15,7 @@ gloo-storage = "0.3"
 gloo-timers = "0.3"
 gloo-events = "0.2"
 gloo-utils = "0.2"
+js-sys = "0.3"
 web-sys = { version = "0.3", features = [
     "HtmlSelectElement", "HtmlInputElement", "HtmlElement",
     "KeyboardEvent", "Event", "EventTarget",

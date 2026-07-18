@@ -17,13 +17,13 @@ pub async fn home_data(State(db): State<Arc<Database>>) -> Json<HomeResponse> {
         let sql = format!("SELECT id, title, author, cover_url, intro, category_id, status, last_update, created_at, click_count, recommend_count FROM novels WHERE category_id = {} ORDER BY click_count DESC LIMIT 1", cat.id);
         let featured_novel = query_one_novel(&conn, &sql).await;
 
-        let sql2 = format!("SELECT id, title, author, cover_url, intro, category_id, status, last_update, created_at, click_count, recommend_count FROM novels WHERE category_id = {} ORDER BY click_count DESC LIMIT 6", cat.id);
-        let novels = query_novels(&conn, &sql2).await;
+        if let Some(ref fn2) = featured_novel {
+            let sql2 = format!("SELECT id, title, author, cover_url, intro, category_id, status, last_update, created_at, click_count, recommend_count FROM novels WHERE category_id = {} AND id != {} ORDER BY click_count DESC LIMIT 6", cat.id, fn2.id);
+            let novels = query_novels(&conn, &sql2).await;
 
-        if let Some(fn2) = featured_novel {
             category_blocks.push(CategoryBlock {
                 category: cat.clone(),
-                featured_novel: fn2,
+                featured_novel: fn2.clone(),
                 novels,
             });
         }

@@ -14,24 +14,22 @@ pub struct SearchPageProps {
 pub fn search_page(props: &SearchPageProps) -> Html {
     let results = use_state(|| Vec::<Novel>::new());
     let loading = use_state(|| true);
+    let error = use_state(|| None::<String>);
 
     {
         let results = results.clone();
         let loading = loading.clone();
+        let error = error.clone();
         let q = props.q.clone();
         use_effect_with(q.clone(), move |q| {
             let results = results.clone();
             let loading = loading.clone();
+            let error = error.clone();
             let query = q.clone();
             wasm_bindgen_futures::spawn_local(async move {
                 match api::fetch_search(&query).await {
-                    Ok(r) => {
-                        results.set(r);
-                        loading.set(false);
-                    }
-                    Err(_) => {
-                        loading.set(false);
-                    }
+                    Ok(r) => { results.set(r); loading.set(false); }
+                    Err(e) => { error.set(Some(e)); loading.set(false); }
                 }
             });
             || ()
@@ -52,13 +50,15 @@ pub fn search_page(props: &SearchPageProps) -> Html {
                 <div style="text-align:center;padding:50px;color:#88C6E5;font-size:16px;">
                     { "搜索中..." }
                 </div>
+            } else if let Some(ref err) = *error {
+                <div style="text-align:center;padding:50px;color:red;">
+                    { format!("搜索失败: {}", err) }
+                </div>
             } else if results.is_empty() {
                 <div class="novelslist">
                     <div class="content list-block" style="border-right:0;flex:1">
                         <h2>{ format!("搜索 \"{}\" 的结果", props.q) }</h2>
-                        <ul>
-                            <li>{ "未找到相关小说，请尝试其他关键词" }</li>
-                        </ul>
+                        <ul><li>{ "未找到相关小说，请尝试其他关键词" }</li></ul>
                     </div>
                 </div>
             } else {
@@ -68,7 +68,7 @@ pub fn search_page(props: &SearchPageProps) -> Html {
                         <ul>
                             { results.iter().map(|n| html! {
                                 <li>
-                                    { "【" }{ get_cat_short(n.category_id) }{ "】 " }
+                                    { "【" }{ cat_short(n.category_id) }{ "】 " }
                                     <Link<Route> to={Route::NovelDetail { id: n.id }}>{ &n.title }</Link<Route>>
                                     <span style="float:right;color:#B3B3B3">
                                         { format!("{} · {}", &n.author, &n.last_update) }
@@ -83,7 +83,7 @@ pub fn search_page(props: &SearchPageProps) -> Html {
     }
 }
 
-fn get_cat_short(cat_id: i64) -> &'static str {
+fn cat_short(cat_id: i64) -> &'static str {
     match cat_id {
         1 => "玄幻", 2 => "仙侠", 3 => "都市", 4 => "历史",
         5 => "游戏", 6 => "科幻", 7 => "修真", 8 => "穿越",

@@ -36,6 +36,7 @@ pub fn chapter_reader_page(props: &ChapterReaderProps) -> Html {
         use_effect_with((novel_id, chapter_id), move |(nid, cid)| {
             let nid = *nid;
             let cid = *cid;
+            loading.set(true);
             wasm_bindgen_futures::spawn_local(async move {
                 match api::fetch_chapter(nid, cid).await {
                     Ok(Some(d)) => {

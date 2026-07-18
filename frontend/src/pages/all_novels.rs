@@ -13,16 +13,19 @@ pub fn all_novels_page() -> Html {
     let total_pages = use_state(|| 0i64);
     let page = use_state(|| 1i64);
     let loading = use_state(|| true);
+    let error = use_state(|| None::<String>);
 
     {
         let novels = novels.clone();
         let loading = loading.clone();
+        let error = error.clone();
         let total = total.clone();
         let total_pages = total_pages.clone();
         let p = *page;
         use_effect_with(p, move |p| {
             let novels = novels.clone();
             let loading = loading.clone();
+            let error = error.clone();
             let total = total.clone();
             let total_pages = total_pages.clone();
             let p = *p;
@@ -34,7 +37,8 @@ pub fn all_novels_page() -> Html {
                         total_pages.set((resp.total + resp.page_size - 1) / resp.page_size);
                         loading.set(false);
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        error.set(Some(e));
                         loading.set(false);
                     }
                 }
@@ -45,9 +49,7 @@ pub fn all_novels_page() -> Html {
 
     let on_page = {
         let page = page.clone();
-        Callback::from(move |p: i64| {
-            page.set(p);
-        })
+        Callback::from(move |p: i64| { page.set(p); })
     };
 
     html! {
@@ -64,6 +66,10 @@ pub fn all_novels_page() -> Html {
                 <div style="text-align:center;padding:50px;color:#88C6E5;font-size:16px;">
                     { "加载中..." }
                 </div>
+            } else if let Some(ref err) = *error {
+                <div style="text-align:center;padding:50px;color:red;">
+                    { format!("加载失败: {}", err) }
+                </div>
             } else {
                 <div class="novelslist">
                     <div class="content list-block" style="border-right:0;flex:1">
@@ -71,7 +77,7 @@ pub fn all_novels_page() -> Html {
                         <ul>
                             { novels.iter().map(|n| html! {
                                 <li>
-                                    { "【" }{ get_cat_short(n.category_id) }{ "】 " }
+                                    { "【" }{ cat_short(n.category_id) }{ "】 " }
                                     <Link<Route> to={Route::NovelDetail { id: n.id }}>{ &n.title }</Link<Route>>
                                     <span style="float:right;color:#B3B3B3">
                                         { format!("{} · {}", &n.author, &n.last_update) }
@@ -88,7 +94,7 @@ pub fn all_novels_page() -> Html {
     }
 }
 
-fn get_cat_short(cat_id: i64) -> &'static str {
+fn cat_short(cat_id: i64) -> &'static str {
     match cat_id {
         1 => "玄幻", 2 => "仙侠", 3 => "都市", 4 => "历史",
         5 => "游戏", 6 => "科幻", 7 => "修真", 8 => "穿越",

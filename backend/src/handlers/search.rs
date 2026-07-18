@@ -19,14 +19,15 @@ pub async fn search(
         return Json(vec![]);
     }
     let pattern = format!("%{}%", query);
-    let sql = format!(
-        "SELECT id, title, author, cover_url, intro, category_id, status, last_update, created_at, click_count, recommend_count FROM novels WHERE title LIKE '{}' OR author LIKE '{}' ORDER BY click_count DESC LIMIT 20",
-        pattern.replace('\'', "''"),
-        pattern.replace('\'', "''")
-    );
 
     let conn = db.connect().unwrap();
-    let mut rows = conn.query(&sql, ()).await.unwrap();
+    let mut rows = conn
+        .query(
+            "SELECT id, title, author, cover_url, intro, category_id, status, last_update, created_at, click_count, recommend_count FROM novels WHERE title LIKE ?1 OR author LIKE ?1 ORDER BY click_count DESC LIMIT 20",
+            [pattern.as_str()],
+        )
+        .await
+        .unwrap();
 
     let mut list = Vec::new();
     while let Ok(Some(row)) = rows.next().await {

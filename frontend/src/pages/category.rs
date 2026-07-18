@@ -26,6 +26,16 @@ pub fn category_page(props: &CategoryPageProps) -> Html {
 
     let slug = props.slug.clone();
 
+    // Reset page when slug changes
+    {
+        let page = page.clone();
+        let slug = slug.clone();
+        use_effect_with(slug, move |_| {
+            page.set(1);
+            || ()
+        });
+    }
+
     // Fetch categories to get the matching cat_id
     {
         let categories = categories.clone();

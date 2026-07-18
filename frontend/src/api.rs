@@ -64,6 +64,5 @@ pub async fn fetch_rankings(rtype: &str) -> Result<Vec<Novel>, String> {
 }
 
 fn urlencoding(s: &str) -> String {
-    // Simple URL encoding — replace spaces with +
-    s.replace(' ', "+")
+    js_sys::encode_uri_component(s).as_string().unwrap_or_else(|| s.to_string())
 }

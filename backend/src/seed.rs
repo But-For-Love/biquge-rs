@@ -165,7 +165,7 @@ pub async fn seed(db: &Arc<Database>) {
     }
 
     // 5 chapters each for novels 4-30
-    for novel_id in 4i64..=30i64 {
+    for novel_id in 4i64..=31i64 {
         for ch_num in 1i64..=5i64 {
             let title = format!("第{}章 开篇", ch_num);
             let mut content = String::new();
